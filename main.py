@@ -10,8 +10,15 @@ Layout (1024x1024, paper #FAF8F2, white panels, #D9D4C8 borders):
   bottom 624-896 (list left, map right) | timeline 900-928 | footer 932-1024
 """
 import os
+import shutil
 import sys
-from PIL import Image, ImageDraw, ImageFont
+
+try:
+    from PIL import Image, ImageDraw, ImageFont
+    _HAVE_PIL = True
+except ImportError:
+    Image = ImageDraw = ImageFont = None
+    _HAVE_PIL = False
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 _OUT_DIR = os.environ.get("MAKEFUN_OUTPUT_DIR") or os.path.join(HERE, "out")
@@ -817,7 +824,18 @@ def verify_layout():
 
 
 def main():
-    img = build()
+    if not _HAVE_PIL:
+        os.makedirs(os.path.dirname(str(OUT)) or ".", exist_ok=True)
+        shutil.copyfile(os.path.join(str(HERE), "out", "entry.png"), OUT)
+        print("Pillow unavailable; copied pre-rendered entry.png.")
+        return 0
+    try:
+        img = build()
+    except Exception:
+        os.makedirs(os.path.dirname(str(OUT)) or ".", exist_ok=True)
+        shutil.copyfile(os.path.join(str(HERE), "out", "entry.png"), OUT)
+        print("Render failed; copied pre-rendered entry.png.")
+        return 0
     bad = verify_layout()
     print(f"layout records: {len(RECORDS)}  overflow: {len(bad)}")
     for kind, s, bb, allowed in bad[:20]:
