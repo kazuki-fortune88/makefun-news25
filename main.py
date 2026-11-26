@@ -14,7 +14,9 @@ import sys
 from PIL import Image, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "out", "entry.png")
+_OUT_DIR = os.environ.get("MAKEFUN_OUTPUT_DIR") or os.path.join(HERE, "out")
+os.makedirs(_OUT_DIR, exist_ok=True)
+OUT = os.path.join(_OUT_DIR, "entry.png")
 
 W, H = 1024, 1024
 PAPER = "#FAF8F2"
